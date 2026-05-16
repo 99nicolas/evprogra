@@ -1,0 +1,115 @@
+# =============================================================================
+# PARAMETERS — Caso 3: Recursos Humanos
+# SCY1101 Programación para la Ciencia de Datos
+# Centraliza todos los hiperparámetros del proyecto para facilitar
+# la reproducibilidad y el ajuste sin tocar el código fuente.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Pipeline: data_cleaning
+# -----------------------------------------------------------------------------
+cleaning:
+
+  # Columnas numéricas donde imputar nulos con la MEDIANA
+  impute_median:
+    empleados:   ["salario", "id_empleado"]
+    ausencias:   ["dias", "id_empleado"]
+    capacitaciones: ["horas", "nota_final"]
+    evaluaciones: ["puntaje_desempeno", "competencias_tecnicas", "competencias_blandas"]
+
+  # Columnas categóricas donde imputar nulos con la MODA
+  impute_mode:
+    empleados:   ["departamento", "cargo", "tipo_contrato", "jornada"]
+    ausencias:   ["tipo_ausencia", "justificada"]
+    capacitaciones: ["nombre_curso", "estado"]
+    evaluaciones: ["periodo"]
+
+  # Columnas de fecha a parsear en cada dataset
+  date_columns:
+    empleados:      ["fecha_ingreso"]
+    ausencias:      ["fecha_inicio", "fecha_fin"]
+    capacitaciones: ["fecha_inicio", "fecha_fin"]
+    evaluaciones:   []
+
+  # Método para tratamiento de outliers: "iqr" o "zscore"
+  outlier_method: "iqr"
+
+  # Factor IQR (1.5 = estándar, 3.0 = solo outliers extremos)
+  iqr_factor: 1.5
+
+  # Columnas numéricas a revisar por outliers
+  outlier_columns:
+    empleados:      ["salario"]
+    ausencias:      ["dias"]
+    capacitaciones: ["horas", "nota_final"]
+    evaluaciones:   ["puntaje_desempeno", "competencias_tecnicas", "competencias_blandas"]
+
+  # Umbral de puntaje máximo válido en evaluaciones (escala 1-7)
+  puntaje_max_valido: 7.0
+  puntaje_min_valido: 1.0
+
+# -----------------------------------------------------------------------------
+# Pipeline: data_transform
+# -----------------------------------------------------------------------------
+transform:
+
+  # Columnas a normalizar con MinMaxScaler (rango 0-1)
+  normalize_minmax:
+    - "salario"
+    - "dias_ausencia_total"
+    - "horas_capacitacion_total"
+    - "puntaje_desempeno_promedio"
+
+  # Columnas a estandarizar con StandardScaler (media 0, std 1)
+  standardize_zscore:
+    - "competencias_tecnicas_promedio"
+    - "competencias_blandas_promedio"
+
+  # Columnas categóricas a codificar con Label Encoding
+  label_encode:
+    - "tipo_contrato"
+    - "jornada"
+
+  # Columnas categóricas a codificar con One-Hot Encoding
+  onehot_encode:
+    - "departamento"
+    - "tipo_ausencia_mas_frecuente"
+
+  # Umbral mínimo de capacitaciones completadas para flag binario
+  min_capacitaciones_completadas: 1
+
+  # Columnas clave para el join maestro
+  join_key: "id_empleado"
+
+# -----------------------------------------------------------------------------
+# Pipeline: data_validation
+# -----------------------------------------------------------------------------
+validation:
+
+  # Porcentaje máximo de nulos permitido en el dataset final (0.0 = sin nulos)
+  max_null_pct: 0.0
+
+  # Rango válido de salarios (en CLP)
+  salario_min: 200000
+  salario_max: 10000000
+
+  # Rango válido de días de ausencia
+  dias_min: 1
+  dias_max: 31
+
+  # Rango válido de notas de capacitación
+  nota_min: 1.0
+  nota_max: 7.0
+
+  # Rango válido de puntajes de evaluación
+  puntaje_min: 1.0
+  puntaje_max: 7.0
+
+  # Columnas obligatorias en el dataset final integrado
+  required_columns:
+    - "id_empleado"
+    - "nombre"
+    - "departamento"
+    - "cargo"
+    - "salario"
+    - "fecha_ingreso"

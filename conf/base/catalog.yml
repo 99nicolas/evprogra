@@ -1,0 +1,166 @@
+# =============================================================================
+# DATA CATALOG — Caso 3: Recursos Humanos
+# SCY1101 Programación para la Ciencia de Datos
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 01_RAW — Datos originales (NO modificar)
+# -----------------------------------------------------------------------------
+
+empleados:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/empleados.csv
+  load_args:
+    encoding: latin-1
+  metadata:
+    description: "Datos maestros de empleados: cargo, departamento, salario, contrato"
+
+ausencias:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/ausencias.csv
+  load_args:
+    encoding: latin-1
+  metadata:
+    description: "Registro de ausencias laborales por empleado"
+
+capacitaciones:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/capacitaciones.csv
+  load_args:
+    encoding: latin-1
+  metadata:
+    description: "Programas de capacitación: cursos, horas, estado y notas"
+
+evaluaciones:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/evaluaciones.csv
+  load_args:
+    encoding: latin-1
+  metadata:
+    description: "Evaluaciones de desempeño semestral por empleado"
+
+
+# -----------------------------------------------------------------------------
+# 02_INTERMEDIATE — Datos limpios (output de data_cleaning)
+# -----------------------------------------------------------------------------
+
+empleados_clean:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/empleados_clean.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Empleados con nulos imputados, duplicados eliminados y outliers tratados"
+
+ausencias_clean:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/ausencias_clean.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Ausencias con fechas unificadas, strings normalizados y nulos tratados"
+
+capacitaciones_clean:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/capacitaciones_clean.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Capacitaciones con nombres de curso normalizados y tipos corregidos"
+
+evaluaciones_clean:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/evaluaciones_clean.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Evaluaciones con outliers de puntaje corregidos y nulos imputados"
+
+
+# -----------------------------------------------------------------------------
+# 03_PRIMARY — Datos integrados y transformados (output de data_transform)
+# -----------------------------------------------------------------------------
+
+rrhh_integrado:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/rrhh_integrado.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Dataset master: join de las 4 tablas limpias con features derivadas"
+
+rrhh_encoded:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/rrhh_encoded.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Dataset final con variables categóricas codificadas y numéricas normalizadas"
+
+resumen_departamento:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/resumen_departamento.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Pivot/groupby: métricas agregadas por departamento"
+
+
+# -----------------------------------------------------------------------------
+# 08_REPORTING — Reportes de validación (output de data_validation)
+# -----------------------------------------------------------------------------
+
+reporte_diagnostico:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/reporte_diagnostico.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Diagnóstico inicial: nulos, duplicados y outliers detectados por dataset"
+
+reporte_validacion:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/reporte_validacion.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Comparación antes/después de la limpieza: métricas de calidad"
+
+reporte_integridad:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/reporte_integridad.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Validación de esquema, tipos y rangos del dataset final"
+
+reporte_ingestion:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/reporte_ingestion.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+  metadata:
+    description: "Reporte de exploración inicial y diagnóstico de calidad de los datasets raw"
