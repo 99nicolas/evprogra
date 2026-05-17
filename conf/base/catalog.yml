@@ -3,9 +3,8 @@
 # SCY1101 Programación para la Ciencia de Datos
 # =============================================================================
 
-
 # -----------------------------------------------------------------------------
-# 01_RAW — Datos originales (NO modificar)
+# 01_RAW — Datos originales
 # -----------------------------------------------------------------------------
 
 empleados:
@@ -40,9 +39,8 @@ evaluaciones:
   metadata:
     description: "Evaluaciones de desempeño semestral por empleado"
 
-
 # -----------------------------------------------------------------------------
-# 02_INTERMEDIATE — Datos limpios (output de data_cleaning)
+# 02_INTERMEDIATE — Datos limpios
 # -----------------------------------------------------------------------------
 
 empleados_clean:
@@ -52,6 +50,7 @@ empleados_clean:
     encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
     description: "Empleados con nulos imputados, duplicados eliminados y outliers tratados"
 
@@ -62,6 +61,7 @@ ausencias_clean:
     encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
     description: "Ausencias con fechas unificadas, strings normalizados y nulos tratados"
 
@@ -72,6 +72,7 @@ capacitaciones_clean:
     encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
     description: "Capacitaciones con nombres de curso normalizados y tipos corregidos"
 
@@ -82,12 +83,12 @@ evaluaciones_clean:
     encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
     description: "Evaluaciones con outliers de puntaje corregidos y nulos imputados"
 
-
 # -----------------------------------------------------------------------------
-# 03_PRIMARY — Datos integrados y transformados (output de data_transform)
+# 03_PRIMARY — Datos integrados y transformados
 # -----------------------------------------------------------------------------
 
 rrhh_integrado:
@@ -97,6 +98,7 @@ rrhh_integrado:
     encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
     description: "Dataset master: join de las 4 tablas limpias con features derivadas"
 
@@ -107,6 +109,7 @@ rrhh_encoded:
     encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
     description: "Dataset final con variables categóricas codificadas y numéricas normalizadas"
 
@@ -117,50 +120,252 @@ resumen_departamento:
     encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
     description: "Pivot/groupby: métricas agregadas por departamento"
 
+# -----------------------------------------------------------------------------
+# 05_MODEL_INPUT — Splits de entrenamiento y prueba
+# -----------------------------------------------------------------------------
+
+Xtrainclf:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/Xtrainclf.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Features de entrenamiento para clasificación"
+
+Xtestclf:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/Xtestclf.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Features de prueba para clasificación"
+
+ytrainclf:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/ytrainclf.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Variable objetivo entrenamiento clasificación"
+
+ytestclf:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/ytestclf.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Variable objetivo prueba clasificación"
+
+Xtrainreg:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/Xtrainreg.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Features de entrenamiento para regresión"
+
+Xtestreg:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/Xtestreg.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Features de prueba para regresión"
+
+ytrainreg:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/ytrainreg.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Variable objetivo entrenamiento regresión"
+
+ytestreg:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/ytestreg.csv
+  load_args:
+    encoding: cp1252
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Variable objetivo prueba regresión"
 
 # -----------------------------------------------------------------------------
-# 08_REPORTING — Reportes de validación (output de data_validation)
+# 06_MODELS — Modelos entrenados
+# -----------------------------------------------------------------------------
+
+modelo_rf_clf:
+  type: pickle.PickleDataset
+  filepath: data/06_models/modelo_rf_clf.pkl
+  backend: pickle
+  metadata:
+    description: "RandomForestClassifier entrenado"
+
+modelo_lr_clf:
+  type: pickle.PickleDataset
+  filepath: data/06_models/modelo_lr_clf.pkl
+  backend: pickle
+  metadata:
+    description: "LogisticRegression entrenado"
+
+modelo_gbm_clf:
+  type: pickle.PickleDataset
+  filepath: data/06_models/modelo_gbm_clf.pkl
+  backend: pickle
+  metadata:
+    description: "GradientBoostingClassifier entrenado"
+
+modelo_rf_reg:
+  type: pickle.PickleDataset
+  filepath: data/06_models/modelo_rf_reg.pkl
+  backend: pickle
+  metadata:
+    description: "RandomForestRegressor entrenado"
+
+modelo_ridge_reg:
+  type: pickle.PickleDataset
+  filepath: data/06_models/modelo_ridge_reg.pkl
+  backend: pickle
+  metadata:
+    description: "Ridge entrenado"
+
+modelo_gbm_reg:
+  type: pickle.PickleDataset
+  filepath: data/06_models/modelo_gbm_reg.pkl
+  backend: pickle
+  metadata:
+    description: "GradientBoostingRegressor entrenado"
+
+modelo_rf_clf_optimizado:
+  type: pickle.PickleDataset
+  filepath: data/06_models/modelo_rf_clf_optimizado.pkl
+  backend: pickle
+  metadata:
+    description: "RandomForest optimizado con GridSearchCV"
+
+modelo_gbm_clf_optimizado:
+  type: pickle.PickleDataset
+  filepath: data/06_models/modelo_gbm_clf_optimizado.pkl
+  backend: pickle
+  metadata:
+    description: "GradientBoosting optimizado con RandomizedSearchCV"
+
+# -----------------------------------------------------------------------------
+# 08_REPORTING — Reportes
 # -----------------------------------------------------------------------------
 
 reporte_diagnostico:
   type: pandas.CSVDataset
   filepath: data/08_reporting/reporte_diagnostico.csv
-  load_args:
-    encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
-    description: "Diagnóstico inicial: nulos, duplicados y outliers detectados por dataset"
+    description: "Diagnóstico inicial de calidad"
 
 reporte_validacion:
   type: pandas.CSVDataset
   filepath: data/08_reporting/reporte_validacion.csv
-  load_args:
-    encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
-    description: "Comparación antes/después de la limpieza: métricas de calidad"
+    description: "Comparación antes/después de limpieza"
 
 reporte_integridad:
   type: pandas.CSVDataset
   filepath: data/08_reporting/reporte_integridad.csv
-  load_args:
-    encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
-    description: "Validación de esquema, tipos y rangos del dataset final"
+    description: "Validación de esquema, tipos y rangos"
 
 reporte_ingestion:
   type: pandas.CSVDataset
   filepath: data/08_reporting/reporte_ingestion.csv
-  load_args:
-    encoding: cp1252
   save_args:
     index: False
+    encoding: cp1252
   metadata:
-    description: "Reporte de exploración inicial y diagnóstico de calidad de los datasets raw"
+    description: "Exploración inicial y diagnóstico de raw"
+
+metricas_clasificacion:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/metricas_clasificacion.csv
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Accuracy, F1, ROC-AUC, precision y recall"
+
+metricas_regresion:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/metricas_regresion.csv
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "MAE, MSE, RMSE y R²"
+
+importancias_rf_clf:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/importancias_rf_clf.csv
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Feature importances del RandomForest de clasificación"
+
+importancias_rf_reg:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/importancias_rf_reg.csv
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Feature importances del RandomForest de regresión"
+
+metricas_optimizacion:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/metricas_optimizacion.csv
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Comparación antes/después de tuning"
+
+reporte_clustering:
+  type: pandas.CSVDataset
+  filepath: data/08_reporting/reporte_clustering.csv
+  save_args:
+    index: False
+    encoding: cp1252
+  metadata:
+    description: "Asignación de clusters KMeans y métricas"

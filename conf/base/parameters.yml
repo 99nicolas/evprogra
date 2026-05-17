@@ -113,3 +113,110 @@ validation:
     - "cargo"
     - "salario"
     - "fecha_ingreso"
+
+# -----------------------------------------------------------------------------
+# EV2 — Machine Learning
+# -----------------------------------------------------------------------------
+
+preprocessing:
+  target_clf: "segmento_desempeno"
+  target_reg: "score_desempeno"
+  drop_columns:
+    - "segmento_desempeno"
+    - "score_desempeno"
+    - "riesgo_ausentismo"
+  test_size: 0.2
+  random_state: 42
+  stratify_clf: true
+
+classification:
+  random_state: 42
+
+  random_forest:
+    n_estimators: 100
+    max_depth: 10
+    min_samples_split: 5
+    min_samples_leaf: 2
+    class_weight: "balanced"
+    random_state: 42
+
+  logistic_regression:
+    max_iter: 1000
+    C: 1.0
+    solver: "lbfgs"
+    multi_class: "auto"
+    class_weight: "balanced"
+    random_state: 42
+
+  gradient_boosting:
+    n_estimators: 100
+    learning_rate: 0.1
+    max_depth: 4
+    subsample: 0.8
+    random_state: 42
+
+  cross_validation:
+    cv: 5
+    scoring: "f1_weighted"
+
+regression:
+  random_state: 42
+
+  random_forest:
+    n_estimators: 100
+    max_depth: 10
+    min_samples_split: 5
+    min_samples_leaf: 2
+    random_state: 42
+
+  ridge:
+    alpha: 1.0
+    max_iter: 1000
+
+  gradient_boosting:
+    n_estimators: 100
+    learning_rate: 0.1
+    max_depth: 4
+    subsample: 0.8
+    random_state: 42
+
+  cross_validation:
+    cv: 5
+    scoring: "neg_root_mean_squared_error"
+
+hyperparameter_tuning:
+  random_state: 42
+  cv: 5
+  scoring_clf: "f1_weighted"
+  scoring_reg: "neg_root_mean_squared_error"
+  n_jobs: -1
+  verbose: 1
+
+  grid_search_rf_clf:
+    n_estimators: [50, 100, 200]
+    max_depth: [5, 10, 15, null]
+    min_samples_split: [2, 5, 10]
+    min_samples_leaf: [1, 2, 4]
+    class_weight: ["balanced"]
+
+  random_search_gbm_clf:
+    n_iter: 30
+    param_distributions:
+      n_estimators: [50, 100, 150, 200, 300]
+      learning_rate: [0.01, 0.05, 0.1, 0.2]
+      max_depth: [3, 4, 5, 6, 8]
+      subsample: [0.6, 0.7, 0.8, 0.9, 1.0]
+      min_samples_split: [2, 5, 10]
+
+unsupervised:
+  random_state: 42
+
+  kmeans:
+    n_clusters: 3
+    n_init: 10
+    max_iter: 300
+    k_range: [2, 3, 4, 5, 6, 7, 8]
+
+  pca:
+    n_components: 2
+    random_state: 42
