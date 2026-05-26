@@ -128,9 +128,9 @@ resumen_departamento:
 # 05_MODEL_INPUT — Splits de entrenamiento y prueba
 # -----------------------------------------------------------------------------
 
-Xtrainclf:
+X_train_clf:
   type: pandas.CSVDataset
-  filepath: data/05_model_input/Xtrainclf.csv
+  filepath: data/05_model_input/X_train_clf.csv
   load_args:
     encoding: cp1252
   save_args:
@@ -139,9 +139,9 @@ Xtrainclf:
   metadata:
     description: "Features de entrenamiento para clasificación"
 
-Xtestclf:
+X_test_clf:
   type: pandas.CSVDataset
-  filepath: data/05_model_input/Xtestclf.csv
+  filepath: data/05_model_input/X_test_clf.csv
   load_args:
     encoding: cp1252
   save_args:
@@ -150,9 +150,9 @@ Xtestclf:
   metadata:
     description: "Features de prueba para clasificación"
 
-ytrainclf:
+y_train_clf:
   type: pandas.CSVDataset
-  filepath: data/05_model_input/ytrainclf.csv
+  filepath: data/05_model_input/y_train_clf.csv
   load_args:
     encoding: cp1252
   save_args:
@@ -161,9 +161,9 @@ ytrainclf:
   metadata:
     description: "Variable objetivo entrenamiento clasificación"
 
-ytestclf:
+y_test_clf:
   type: pandas.CSVDataset
-  filepath: data/05_model_input/ytestclf.csv
+  filepath: data/05_model_input/y_test_clf.csv
   load_args:
     encoding: cp1252
   save_args:
@@ -172,9 +172,9 @@ ytestclf:
   metadata:
     description: "Variable objetivo prueba clasificación"
 
-Xtrainreg:
+X_train_reg:
   type: pandas.CSVDataset
-  filepath: data/05_model_input/Xtrainreg.csv
+  filepath: data/05_model_input/X_train_reg.csv
   load_args:
     encoding: cp1252
   save_args:
@@ -183,9 +183,9 @@ Xtrainreg:
   metadata:
     description: "Features de entrenamiento para regresión"
 
-Xtestreg:
+X_test_reg:
   type: pandas.CSVDataset
-  filepath: data/05_model_input/Xtestreg.csv
+  filepath: data/05_model_input/X_test_reg.csv
   load_args:
     encoding: cp1252
   save_args:
@@ -194,9 +194,9 @@ Xtestreg:
   metadata:
     description: "Features de prueba para regresión"
 
-ytrainreg:
+y_train_reg:
   type: pandas.CSVDataset
-  filepath: data/05_model_input/ytrainreg.csv
+  filepath: data/05_model_input/y_train_reg.csv
   load_args:
     encoding: cp1252
   save_args:
@@ -205,9 +205,9 @@ ytrainreg:
   metadata:
     description: "Variable objetivo entrenamiento regresión"
 
-ytestreg:
+y_test_reg:
   type: pandas.CSVDataset
-  filepath: data/05_model_input/ytestreg.csv
+  filepath: data/05_model_input/y_test_reg.csv
   load_args:
     encoding: cp1252
   save_args:

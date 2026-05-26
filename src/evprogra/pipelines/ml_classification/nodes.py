@@ -19,12 +19,12 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.impute import SimpleImputer
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import (
     accuracy_score, f1_score, precision_score,
     recall_score, roc_auc_score, classification_report,
 )
-from sklearn.preprocessing import LabelEncoder
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +32,44 @@ logger = logging.getLogger(__name__)
 def _preparar_xy(
     X: pd.DataFrame,
     y: pd.DataFrame,
+    imputer: SimpleImputer = None,
+    fit: bool = True,
 ) -> tuple:
-    """Convierte DataFrames a arrays numpy listos para sklearn."""
-    # Seleccionar solo columnas numéricas
+    """
+    Convierte DataFrames a arrays listos para sklearn.
+    Imputa NaN con mediana para evitar errores en estimadores
+    que no aceptan valores faltantes (GradientBoosting, LogisticRegression).
+
+    Args:
+        X: DataFrame de features.
+        y: DataFrame con la columna target.
+        imputer: Instancia de SimpleImputer ya ajustada (para test set).
+                 Si es None se crea uno nuevo.
+        fit: True → fit_transform (usar en train).
+             False → solo transform (usar en test, pasar imputer ajustado).
+
+    Returns:
+        (X_imputado, y_array, imputer) — el imputer se retorna para
+        reutilizarlo en el conjunto de test.
+    """
     X_num = X.select_dtypes(include=[np.number])
     y_arr = y.iloc[:, 0].values
-    return X_num, y_arr
+
+    if imputer is None:
+        imputer = SimpleImputer(strategy="median")
+
+    if fit:
+        X_imp = imputer.fit_transform(X_num)
+    else:
+        X_imp = imputer.transform(X_num)
+
+    nan_restantes = np.isnan(X_imp).sum()
+    if nan_restantes > 0:
+        logger.warning("_preparar_xy: quedan %d NaN después de imputar.", nan_restantes)
+    else:
+        logger.info("_preparar_xy: imputación OK — 0 NaN (fit=%s)", fit)
+
+    return pd.DataFrame(X_imp, columns=X_num.columns), y_arr, imputer
 
 
 def _calcular_metricas(
@@ -103,14 +135,14 @@ def entrenar_random_forest_clf(
     Returns:
         Modelo entrenado.
     """
-    X_tr, y_tr = _preparar_xy(X_train_clf, y_train_clf)
-    X_te, y_te = _preparar_xy(X_test_clf, y_test_clf)
+    X_tr, y_tr, imp = _preparar_xy(X_train_clf, y_train_clf, fit=True)
+    X_te, y_te, _   = _preparar_xy(X_test_clf,  y_test_clf,  imputer=imp, fit=False)
 
     modelo = RandomForestClassifier(**params_rf)
     modelo.fit(X_tr, y_tr)
 
-    y_pred  = modelo.predict(X_te)
-    y_proba = modelo.predict_proba(X_te)
+    y_pred    = modelo.predict(X_te)
+    y_proba   = modelo.predict_proba(X_te)
     cv_scores = cross_val_score(modelo, X_tr, y_tr, cv=cv, scoring="f1_weighted")
 
     _calcular_metricas(
@@ -142,14 +174,14 @@ def entrenar_logistic_regression(
     Returns:
         Modelo entrenado.
     """
-    X_tr, y_tr = _preparar_xy(X_train_clf, y_train_clf)
-    X_te, y_te = _preparar_xy(X_test_clf, y_test_clf)
+    X_tr, y_tr, imp = _preparar_xy(X_train_clf, y_train_clf, fit=True)
+    X_te, y_te, _   = _preparar_xy(X_test_clf,  y_test_clf,  imputer=imp, fit=False)
 
     modelo = LogisticRegression(**params_lr)
     modelo.fit(X_tr, y_tr)
 
-    y_pred  = modelo.predict(X_te)
-    y_proba = modelo.predict_proba(X_te)
+    y_pred    = modelo.predict(X_te)
+    y_proba   = modelo.predict_proba(X_te)
     cv_scores = cross_val_score(modelo, X_tr, y_tr, cv=cv, scoring="f1_weighted")
 
     _calcular_metricas(
@@ -181,14 +213,14 @@ def entrenar_gradient_boosting_clf(
     Returns:
         Modelo entrenado.
     """
-    X_tr, y_tr = _preparar_xy(X_train_clf, y_train_clf)
-    X_te, y_te = _preparar_xy(X_test_clf, y_test_clf)
+    X_tr, y_tr, imp = _preparar_xy(X_train_clf, y_train_clf, fit=True)
+    X_te, y_te, _   = _preparar_xy(X_test_clf,  y_test_clf,  imputer=imp, fit=False)
 
     modelo = GradientBoostingClassifier(**params_gbm)
     modelo.fit(X_tr, y_tr)
 
-    y_pred  = modelo.predict(X_te)
-    y_proba = modelo.predict_proba(X_te)
+    y_pred    = modelo.predict(X_te)
+    y_proba   = modelo.predict_proba(X_te)
     cv_scores = cross_val_score(modelo, X_tr, y_tr, cv=cv, scoring="f1_weighted")
 
     _calcular_metricas(
@@ -214,17 +246,17 @@ def consolidar_metricas_clf(
     Returns:
         Tupla (metricas_clasificacion, importancias_rf_clf) como DataFrames.
     """
-    X_tr, y_tr = _preparar_xy(X_train_clf, y_train_clf)
-    X_te, y_te = _preparar_xy(X_test_clf, y_test_clf)
+    X_tr, y_tr, imp = _preparar_xy(X_train_clf, y_train_clf, fit=True)
+    X_te, y_te, _   = _preparar_xy(X_test_clf,  y_test_clf,  imputer=imp, fit=False)
 
     resultados = []
     for nombre, modelo in [
-        ("RandomForest", modelo_rf_clf),
+        ("RandomForest",      modelo_rf_clf),
         ("LogisticRegression", modelo_lr_clf),
-        ("GradientBoosting", modelo_gbm_clf),
+        ("GradientBoosting",  modelo_gbm_clf),
     ]:
-        y_pred  = modelo.predict(X_te)
-        y_proba = modelo.predict_proba(X_te) if hasattr(modelo, "predict_proba") else None
+        y_pred    = modelo.predict(X_te)
+        y_proba   = modelo.predict_proba(X_te) if hasattr(modelo, "predict_proba") else None
         cv_scores = cross_val_score(modelo, X_tr, y_tr, cv=cv, scoring="f1_weighted")
         m = _calcular_metricas(
             nombre, y_te, y_pred, y_proba,
@@ -237,7 +269,7 @@ def consolidar_metricas_clf(
     # Feature importances RF
     feature_names = X_train_clf.select_dtypes(include=[np.number]).columns.tolist()
     importancias_df = pd.DataFrame({
-        "feature": feature_names,
+        "feature":    feature_names,
         "importance": modelo_rf_clf.feature_importances_,
     }).sort_values("importance", ascending=False).reset_index(drop=True)
 

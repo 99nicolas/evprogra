@@ -1,0 +1,5 @@
+modelo,tipo,f1_weighted,rmse,r2
+RF_Clf_Opt,clasificacion,0.9149798477384684,,
+GBM_Clf_Opt,clasificacion,0.980013724481043,,
+Ridge_Reg_Opt,regresion,,0.002500908291357026,0.9999970680872028
+GBM_Reg_Opt,regresion,,0.11307630234506394,0.9940062487772858

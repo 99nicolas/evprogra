@@ -19,16 +19,26 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from sklearn.impute import SimpleImputer
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
 
 logger = logging.getLogger(__name__)
 
 
-def _preparar_xy(X: pd.DataFrame, y: pd.DataFrame):
-    """Retorna solo features numéricas y target como vector 1D."""
+def _preparar_xy(X: pd.DataFrame, y: pd.DataFrame, imputer=None):
+    """Retorna solo features numéricas, imputa NaNs y target como vector 1D."""
     X_num = X.select_dtypes(include=[np.number])
+    
+    # Imputa valores NaN con mediana si no se proporciona imputer
+    if imputer is None:
+        imputer = SimpleImputer(strategy='median')
+        X_imputed = imputer.fit_transform(X_num)
+    else:
+        X_imputed = imputer.transform(X_num)
+    
+    X_imputed = pd.DataFrame(X_imputed, columns=X_num.columns)
     y_arr = y.iloc[:, 0].values
-    return X_num, y_arr
+    return X_imputed, y_arr, imputer
 
 
 def _metricas_modelo(nombre: str, modelo, X_test, y_test) -> dict:
@@ -81,7 +91,7 @@ def optimizar_random_forest_clf(
     Returns:
         Mejor estimador encontrado por GridSearchCV.
     """
-    X_tr, y_tr = _preparar_xy(X_train_clf, y_train_clf)
+    X_tr, y_tr, _ = _preparar_xy(X_train_clf, y_train_clf)
 
     base_model = RandomForestClassifier(random_state=42)
     search = GridSearchCV(
@@ -126,7 +136,7 @@ def optimizar_gbm_clf(
     Returns:
         Mejor estimador encontrado por RandomizedSearchCV.
     """
-    X_tr, y_tr = _preparar_xy(X_train_clf, y_train_clf)
+    X_tr, y_tr, _ = _preparar_xy(X_train_clf, y_train_clf)
 
     base_model = GradientBoostingClassifier(random_state=random_state)
     search = RandomizedSearchCV(
@@ -159,7 +169,7 @@ def consolidar_metricas_optimizacion(
     Returns:
         DataFrame con accuracy, F1, precision, recall y ROC-AUC.
     """
-    X_te, y_te = _preparar_xy(X_test_clf, y_test_clf)
+    X_te, y_te, _ = _preparar_xy(X_test_clf, y_test_clf)
 
     resultados = [
         _metricas_modelo("RandomForest_Optimizado", modelo_rf_clf_optimizado, X_te, y_te),

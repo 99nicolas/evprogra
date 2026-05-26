@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import Ridge
+from sklearn.impute import SimpleImputer
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
@@ -28,11 +29,41 @@ logger = logging.getLogger(__name__)
 def _preparar_xy_reg(
     X: pd.DataFrame,
     y: pd.DataFrame,
+    imputer: SimpleImputer = None,
+    fit: bool = True,
 ) -> tuple:
-    """Convierte DataFrames a arrays numpy para sklearn."""
+    """
+    Convierte DataFrames a arrays numpy para sklearn, imputando NaN con mediana.
+
+    Args:
+        X: DataFrame de features.
+        y: DataFrame con la columna target.
+        imputer: Instancia de SimpleImputer ya ajustada (para test set).
+                 Si es None se crea uno nuevo.
+        fit: True → fit_transform (usar en train).
+             False → solo transform (usar en test, pasar imputer ajustado).
+
+    Returns:
+        (X_imputado, y_array, imputer)
+    """
     X_num = X.select_dtypes(include=[np.number])
     y_arr = y.iloc[:, 0].values.astype(float)
-    return X_num, y_arr
+
+    if imputer is None:
+        imputer = SimpleImputer(strategy="median")
+
+    if fit:
+        X_imp = imputer.fit_transform(X_num)
+    else:
+        X_imp = imputer.transform(X_num)
+
+    nan_restantes = np.isnan(X_imp).sum()
+    if nan_restantes > 0:
+        logger.warning("_preparar_xy_reg: quedan %d NaN después de imputar.", nan_restantes)
+    else:
+        logger.info("_preparar_xy_reg: imputación OK — 0 NaN (fit=%s)", fit)
+
+    return pd.DataFrame(X_imp, columns=X_num.columns), y_arr, imputer
 
 
 def _calcular_metricas_reg(
@@ -87,8 +118,8 @@ def entrenar_random_forest_reg(
     Returns:
         Modelo RandomForestRegressor entrenado.
     """
-    X_tr, y_tr = _preparar_xy_reg(X_train_reg, y_train_reg)
-    X_te, y_te = _preparar_xy_reg(X_test_reg,  y_test_reg)
+    X_tr, y_tr, imp = _preparar_xy_reg(X_train_reg, y_train_reg, fit=True)
+    X_te, y_te, _   = _preparar_xy_reg(X_test_reg,  y_test_reg,  imputer=imp, fit=False)
 
     modelo = RandomForestRegressor(**params_rf)
     modelo.fit(X_tr, y_tr)
@@ -124,8 +155,8 @@ def entrenar_ridge(
     Returns:
         Modelo Ridge entrenado.
     """
-    X_tr, y_tr = _preparar_xy_reg(X_train_reg, y_train_reg)
-    X_te, y_te = _preparar_xy_reg(X_test_reg,  y_test_reg)
+    X_tr, y_tr, imp = _preparar_xy_reg(X_train_reg, y_train_reg, fit=True)
+    X_te, y_te, _   = _preparar_xy_reg(X_test_reg,  y_test_reg,  imputer=imp, fit=False)
 
     modelo = Ridge(**params_ridge)
     modelo.fit(X_tr, y_tr)
@@ -161,8 +192,8 @@ def entrenar_gradient_boosting_reg(
     Returns:
         Modelo GradientBoostingRegressor entrenado.
     """
-    X_tr, y_tr = _preparar_xy_reg(X_train_reg, y_train_reg)
-    X_te, y_te = _preparar_xy_reg(X_test_reg,  y_test_reg)
+    X_tr, y_tr, imp = _preparar_xy_reg(X_train_reg, y_train_reg, fit=True)
+    X_te, y_te, _   = _preparar_xy_reg(X_test_reg,  y_test_reg,  imputer=imp, fit=False)
 
     modelo = GradientBoostingRegressor(**params_gbm)
     modelo.fit(X_tr, y_tr)
@@ -192,13 +223,13 @@ def consolidar_metricas_reg(
     Returns:
         Tupla (metricas_regresion, importancias_rf_reg) como DataFrames.
     """
-    X_tr, y_tr = _preparar_xy_reg(X_train_reg, y_train_reg)
-    X_te, y_te = _preparar_xy_reg(X_test_reg,  y_test_reg)
+    X_tr, y_tr, imp = _preparar_xy_reg(X_train_reg, y_train_reg, fit=True)
+    X_te, y_te, _   = _preparar_xy_reg(X_test_reg,  y_test_reg,  imputer=imp, fit=False)
 
     resultados = []
     for nombre, modelo in [
-        ("RandomForest",    modelo_rf_reg),
-        ("Ridge",           modelo_ridge_reg),
+        ("RandomForest",     modelo_rf_reg),
+        ("Ridge",            modelo_ridge_reg),
         ("GradientBoosting", modelo_gbm_reg),
     ]:
         y_pred    = modelo.predict(X_te)
